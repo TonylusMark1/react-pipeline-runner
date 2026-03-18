@@ -1,0 +1,49 @@
+# Dev docs
+.devdocs/
+
+# Source control
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.cursor/
+.idea/
+*.swp
+*.swo
+*~
+
+# Source files (only dist is needed)
+src/
+
+# Build config
+tsconfig.json
+tsconfig.bundle.json
+tsup.config.ts
+vitest.config.ts
+
+# Documentation
+*.md
+!package.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Tests
+tests/
+*.test.ts
+*.spec.ts
+__tests__/
+
+# Temporary files
+*.tmp
+.cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.*
