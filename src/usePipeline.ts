@@ -113,15 +113,18 @@ export function usePipeline<const T extends readonly Types.PipelineStep[]>(
   //
 
   React.useEffect(() => {
-    if (options?.autorun)
+    if (options?.autostart)
       start();
 
     return () => {
-      abortControllerRef.current?.abort();
+      stop();
     };
   }, []);
 
   //
 
-  return { state, current, start, stop, resume } as Types.PipelineResult<TIds>;
+  return React.useMemo(
+    () => ({ state, current, start, stop, resume }),
+    [state, current, start, stop, resume]
+  ) as Types.PipelineResult<TIds>;
 }

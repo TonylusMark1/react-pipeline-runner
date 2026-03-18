@@ -30,14 +30,16 @@ describe('usePipeline - mixed steps (with and without IDs)', () => {
 
   it('tracks correct id for step with id in mixed pipeline', async () => {
     const { result } = renderHook(() => usePipeline([
-      () => {},
-      { id: 'middle', action: async () => { await Helpers.delay(50); } },
+      async () => { await Helpers.delay(10); },
+      { id: 'middle', action: async () => { await Helpers.delay(100); } },
       () => {},
     ]));
 
     act(() => {
       result.current.start();
     });
+
+    await Helpers.advanceTime(20);
 
     await waitFor(() => {
       return result.current.current?.id === 'middle';
@@ -240,6 +242,36 @@ describe('usePipeline - AbortError handling', () => {
 //
 
 describe('usePipeline - method reference stability', () => {
+  it('returned object is referentially stable when nothing changes', () => {
+    const steps = [() => {}];
+
+    const { result, rerender } = renderHook(() => usePipeline(steps));
+
+    const firstResult = result.current;
+
+    rerender();
+
+    expect(result.current).toBe(firstResult);
+  });
+
+  it('returned object changes when state changes', async () => {
+    const steps = [Helpers.createSyncStep([], 'step')];
+
+    const { result } = renderHook(() => usePipeline(steps));
+
+    const firstResult = result.current;
+
+    act(() => {
+      result.current.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.state).toBe('completed');
+    });
+
+    expect(result.current).not.toBe(firstResult);
+  });
+
   it('stop method is referentially stable across rerenders', () => {
     const { result, rerender } = renderHook(() => usePipeline([
       () => {},

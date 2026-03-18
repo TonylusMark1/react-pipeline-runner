@@ -1,6 +1,6 @@
 {
   "name": "react-pipeline-runner",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Lightweight React hook for running async actions sequentially with abort support and resume capability",
   "keywords": [
     "react",

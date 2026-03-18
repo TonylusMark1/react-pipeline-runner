@@ -21,10 +21,11 @@ npm install react-pipeline-runner
 ## Basic Usage
 
 ```tsx
+import { useMemo } from 'react'
 import { usePipeline } from 'react-pipeline-runner'
 
 function MyComponent() {
-  const pipeline = usePipeline([
+  const steps = useMemo(() => [
     async (signal) => {
       await fetch('/api/step1', { signal })
     },
@@ -34,7 +35,9 @@ function MyComponent() {
     async () => {
       console.log('Step 3 - no signal needed')
     },
-  ])
+  ], [])
+
+  const pipeline = usePipeline(steps)
 
   return (
     <div>
@@ -72,12 +75,14 @@ function MyComponent() {
 You can assign IDs to steps for better tracking. TypeScript will automatically infer the ID types.
 
 ```tsx
-const pipeline = usePipeline([
+const steps = useMemo(() => [
   { id: 'fetch-user', action: async () => fetchUser() },
   { id: 'validate', action: () => validateData() },
   async () => doSomethingWithoutId(),
   { id: 'save', action: async () => saveData() },
-])
+], [])
+
+const pipeline = usePipeline(steps)
 
 if (pipeline.state === 'running') {
   console.log('Current step:', pipeline.current.id)
@@ -85,15 +90,14 @@ if (pipeline.state === 'running') {
 }
 ```
 
-## Auto-run
+## Autostart
 
 Start the pipeline automatically when the component mounts:
 
 ```tsx
-const pipeline = usePipeline(
-  [step1, step2, step3],
-  { autorun: true }
-)
+const steps = useMemo(() => [step1, step2, step3], [])
+
+const pipeline = usePipeline(steps, { autostart: true })
 ```
 
 ## API
@@ -106,7 +110,7 @@ const pipeline = usePipeline(
   - A function: `(signal?: AbortSignal) => Promise<unknown> | unknown`
   - An object: `{ id: string, action: (signal?: AbortSignal) => Promise<unknown> | unknown }`
 - `options` - Optional configuration:
-  - `autorun?: boolean` - Start pipeline on mount (default: `false`)
+  - `autostart?: boolean` - Start pipeline on mount (default: `false`)
 
 #### Returns (Discriminated Union)
 
@@ -173,6 +177,39 @@ async (signal) => {
 ```
 
 When `stop()` is called or the component unmounts, the signal is aborted automatically.
+
+## Best Practice: Memoize Steps
+
+Always wrap your steps array in `useMemo` to ensure stable references:
+
+```tsx
+// ❌ Bad - new array on every render
+const pipeline = usePipeline([
+  () => fetchData(),
+  () => processData(),
+])
+
+// ✅ Good - stable reference
+const steps = useMemo(() => [
+  () => fetchData(),
+  () => processData(),
+], [])
+
+const pipeline = usePipeline(steps)
+```
+
+If steps depend on props or state, include them in dependencies:
+
+```tsx
+const steps = useMemo(() => [
+  () => fetchUser(userId),
+  () => sendNotification(),
+], [userId])
+
+const pipeline = usePipeline(steps)
+```
+
+**Why?** Without `useMemo`, the `start` and `resume` methods get new references on every render, which can cause unnecessary re-renders in child components or issues with effect dependencies.
 
 ## License
 

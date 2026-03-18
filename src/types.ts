@@ -10,7 +10,7 @@ export type PipelineStep = PipelineAction | PipelineStepWithId;
 //
 
 export interface PipelineOptions {
-  autorun?: boolean;
+  autostart?: boolean;
 }
 
 //
